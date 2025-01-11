@@ -25,8 +25,8 @@ int main(int argc , char** argv) {
         printf("Usage: %s le nombre d'arguments invalide\n", argv[0]);
         exit(EXIT_FAILURE);
     }
-    char * textFile = argv[1];
-    char * wordFile = argv[2];
+    char * wordFile = argv[1];
+    char * textFile = argv[2];
     // récuperer les descriteurs de fichier 
     int fdTexte = open(textFile, O_RDONLY);
     if (fdTexte == -1) {
@@ -111,26 +111,21 @@ unsigned char **words = malloc(100 * sizeof(char*)); // tableau pour stocker les
 
     close(fdWord);
 
-    // Afficher le nombre total de mots et la somme des tailles
-    printf("Nombre total de mots : %d\n", wordCount);
-    printf("le premier mot :%s",words[0]);
+   
     TABLE_SIZE = maxNode*2; // definire la taille de la table de hachage
     // creation du trie 
     Trie trie = createTrie(maxNode);
 
     for (int i = 0; i < wordCount; i++)
     {
-        printf("insertion du mot :%ld \n",strlen(words[i]));
-       
         insertInTrie(trie,words[i]);
         /* code */
     }
     
-    
     buildSuffixLink(trie);
 
    int result =  search(trie,texte);
-    printf("\n le nombre mot trouvé est %d",result);
+   printf("%d",result);
     
     
 
@@ -408,7 +403,6 @@ int search(Trie trie, unsigned char *text) {
         while (temp != 0) {
             if (trie->finite[temp]) {
                 cmpt++;
-                printf("Mot trouvé à la position %d\n", i);
             }
             temp = trie->outputLink[temp];
         }

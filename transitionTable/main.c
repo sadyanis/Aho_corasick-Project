@@ -2,46 +2,136 @@
 #include <stdlib.h>
 #include <string.h>
 #include<limits.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
 #include "structures.h"
 // Algorithme Aho-Corasick
  int main(int argc, char  **argv){
     
     //@test
+    struct stat st;
+    char buffer[256];
+    int maxNode = 1;
+
     if(argc != 3){
-        printf("Usage: %s <text>\n", argv[0]);
+        printf("Usage: %s le nombre d'arguments invalide\n", argv[0]);
         exit(EXIT_FAILURE);
     }
-    int result =0;
-    int maxNode = 1;
-      unsigned char *words[] = {
-        (unsigned char *)"bonjour",
-        (unsigned char *)"hello",
-        (unsigned char *)"ell",
-         (unsigned char *)"ll"
-    };
-    for (int i = 0; i < (int) sizeof(words) / (int) sizeof(words[0]); i++) {
-        maxNode += strlen((char *)words[i]);
+    char * wordFile = argv[1];
+    char * textFile = argv[2];
+    // récuperer les descriteurs de fichier 
+    int fdTexte = open(textFile, O_RDONLY);
+    if (fdTexte == -1) {
+        perror("Erreur lors de l'ouverture du fichier texte");
+        return EXIT_FAILURE;
+    }
+    int fdWord = open(wordFile, O_RDONLY);
+    if (fdWord == -1) {
+        perror("Erreur lors de l'ouverture du fichier texte");
+        return EXIT_FAILURE;
+    }
+    fstat(fdTexte, &st);
+    int textSize = st.st_size;
+    
+
+    unsigned char *texte = malloc(textSize + 1);
+    if (texte == NULL) {
+        perror("Erreur d'allocation pour le texte");
+        close(fdTexte);
+        return EXIT_FAILURE;
+    }
+     ssize_t n = read(fdTexte, texte, textSize);
+    if (n == -1) {
+        perror("Erreur lors de la lecture du fichier texte");
+        free(texte);
+        close(fdTexte);
+        return EXIT_FAILURE;
+    }
+    texte[textSize] = '\0'; 
+    close(fdTexte);
+    int index = 0;
+    
+unsigned char **words = malloc(100 * sizeof(char*)); // tableau pour stocker les mots 100 mots max
+    if (words == NULL) {
+        perror("Erreur d'allocation pour le tableau de mots");
+        free(texte);
+        close(fdWord);
+        return EXIT_FAILURE;
     }
 
-    unsigned char *text = (unsigned char *)"bonjoursadsadhellosdadasd";
+    int wordCount = 0; // Compteur de mots
+      // Somme des tailles des mots
+
+    char bufferWord[256]; // Buffer temporaire pour un mot
+    int bytesRead;
+    while ((bytesRead = read(fdWord, &bufferWord[index], 1)) > 0) {
+        if (bufferWord[index] == '\n' || index == sizeof(bufferWord) - 1) {
+             bufferWord[index] = '\0';
+            
+            // Allouer de la mémoire pour le mot et le copier dans le tableau
+            words[wordCount] = malloc((index + 1) * sizeof(char));
+            if (words[wordCount] == NULL) {
+                perror("Erreur d'allocation pour un mot");
+                free(texte);
+                for (int i = 0; i < wordCount; i++) {
+                    free(words[i]);
+                }
+                free(words);
+                close(fdWord);
+                return EXIT_FAILURE;
+            }
+            strcpy(words[wordCount], (unsigned char *) bufferWord);
+
+            maxNode += index-1; // Ajouter la taille du mot à la somme
+            wordCount++;
+
+            index = 0; // Réinitialiser l'indice pour lire le mot suivant
+        } else {
+            index++;
+        }
+
+        // Vérifier si on dépasse la capacité du tableau
+        if (wordCount >= 1000) {
+            fprintf(stderr, "Erreur : Trop de mots dans le fichier\n");
+            break;
+        }
+    }
+
+    if (bytesRead == -1) {
+        perror("Erreur lors de la lecture du fichier de mots");
+    }
+
+    close(fdWord);
+
+    // Afficher le nombre total de mots et la somme des tailles
+   
+    // definire la taille de la table de hachage
+    // creation du trie 
     Trie trie = createTrie(maxNode);
-    for (int i = 0; i < (int) sizeof(words) / (int)sizeof(words[0]); i++){
+
+    for (int i = 0; i < wordCount; i++)
+    {
+    
+       
         insertInTrie(trie,words[i]);
+        /* code */
     }
+    
+    
     buildSuffixLink(trie);
-    result = search(trie,text);
-    printf("le nombre d'occurence trouvé est %d \n",result);
+
+   int result =  search(trie,texte);
+    printf("%d",result);
     
     
 
-   
 
-   
      
-
-  
     return 0;
 }
+    
 
 Trie createTrie(int maxNode){
     //initialisation
@@ -272,12 +362,10 @@ int search(Trie trie, unsigned char *text) {
             current_state = trie->transition[current_state][text[i]];
         }
         if (trie->finite[current_state]) {
-            printf("Mot trouvé à la position %d\n", i);
             cmpt++;
         }
         int output_state = trie->outputLink[current_state];
         while (output_state != 0) {
-            printf("Mot trouvé à la position %d\n", i);
             cmpt++;
             output_state = trie->outputLink[output_state];
         }
