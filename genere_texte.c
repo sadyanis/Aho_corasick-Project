@@ -18,7 +18,7 @@ int generate_random_text(long text_length, int alphabet_size) {
 
     // Taille du buffer (peut être ajustée selon les performances)
     const int buffer_size = 4096;
-    char buffer[buffer_size];
+    char buffer[buffer_size+1];
     int buffer_index = 0;
 
     for (long i = 0; i < text_length; i++) {
@@ -26,6 +26,7 @@ int generate_random_text(long text_length, int alphabet_size) {
 
         // Si le buffer est plein, on l'écrit dans le fichier
         if (buffer_index == buffer_size) {
+            buffer[buffer_index]= '\0';
             printf("%s",buffer);
             buffer_index = 0; // Réinitialiser l'index du buffer
         }
@@ -33,6 +34,7 @@ int generate_random_text(long text_length, int alphabet_size) {
 
     // Écrire le reste du buffer si nécessaire
     if (buffer_index > 0) {
+        buffer[buffer_index]= '\0';
        printf("%s",buffer);
     }
 

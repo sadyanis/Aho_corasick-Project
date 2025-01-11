@@ -88,9 +88,9 @@ unsigned char **words = malloc(100 * sizeof(char*)); // tableau pour stocker les
                 close(fdWord);
                 return EXIT_FAILURE;
             }
-            strcpy(words[wordCount], (unsigned char *) bufferWord);
+            strcpy(( char*) words[wordCount],( char*)bufferWord);
 
-            maxNode += index-1; // Ajouter la taille du mot à la somme
+            maxNode += index; // Ajouter la taille du mot à la somme
             wordCount++;
 
             index = 0; // Réinitialiser l'indice pour lire le mot suivant
@@ -126,11 +126,7 @@ unsigned char **words = malloc(100 * sizeof(char*)); // tableau pour stocker les
 
    int result =  search(trie,texte);
    printf("%d",result);
-    
-    
 
-
-     
     return 0;
 }
 // fonction pour creer un trie
@@ -211,27 +207,6 @@ void insertInTrie(Trie trie, unsigned char *w){
     // on marque le dernire etat commme final
     trie->finite[currentNode] = 1;    
 }
-// fonction pour verifier si un mot appartien a un trie  
-int isInTrie(Trie trie, unsigned char *w) {
-    int wordLength = strlen((char *)w);
-    int currentNode = 0;
-    int hashcode;
-
-    for (int i = 0; i < wordLength; i++) {
-        hashcode = hash_function(w[i], currentNode);
-        
-        List point = findExistingTransition(trie, hashcode, currentNode, w[i]);
-        
-        if (point == NULL) {
-            return FALSE; // Mot non trouvé
-        }
-        
-        currentNode = point->targetNode;
-    }
-
-    return (trie->finite[currentNode] == 1) ? TRUE : FALSE;
-}
-
 // fonction pour creer une file
 Queue createQueue(){
 Queue q = (struct queue *)malloc(sizeof(struct queue));

@@ -82,7 +82,7 @@ unsigned char **words = malloc(100 * sizeof(char*)); // tableau pour stocker les
                 close(fdWord);
                 return EXIT_FAILURE;
             }
-            strcpy(words[wordCount], (unsigned char *) bufferWord);
+            strcpy((char *)words[wordCount], (char *) bufferWord);
 
             maxNode += index-1; // Ajouter la taille du mot à la somme
             wordCount++;
