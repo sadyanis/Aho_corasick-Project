@@ -84,5 +84,3 @@ pipenv install
 ```bash
  python3 graphe.py
 ```
-
-> > > > > > > 0bf98846fcb79c5e8b31ef17a7aaef467a7d2f74
