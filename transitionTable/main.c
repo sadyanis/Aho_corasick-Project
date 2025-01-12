@@ -11,17 +11,18 @@
  int main(int argc, char  **argv){
     
     //@test
+    // structure pour récupérer les attributs du fichier
     struct stat st;
-    char buffer[256];
     int maxNode = 1;
 
     if(argc != 3){
         printf("Usage: %s le nombre d'arguments invalide\n", argv[0]);
         exit(EXIT_FAILURE);
     }
+    //récupérer le nom du fichier texte et le nom du fichier de mots passés en paramétres
     char * wordFile = argv[1];
     char * textFile = argv[2];
-    // récuperer les descriteurs de fichier 
+    // récupérer les déscriteurs de fichier 
     int fdTexte = open(textFile, O_RDONLY);
     if (fdTexte == -1) {
         perror("Erreur lors de l'ouverture du fichier texte");
@@ -32,16 +33,18 @@
         perror("Erreur lors de l'ouverture du fichier texte");
         return EXIT_FAILURE;
     }
+    // récupérer la taille du fichier
     fstat(fdTexte, &st);
     int textSize = st.st_size;
     
-
+    // variable pour stocker le contenu du fichier
     unsigned char *texte = malloc(textSize + 1);
     if (texte == NULL) {
         perror("Erreur d'allocation pour le texte");
         close(fdTexte);
         return EXIT_FAILURE;
     }
+    // lecture du fichier
      ssize_t n = read(fdTexte, texte, textSize);
     if (n == -1) {
         perror("Erreur lors de la lecture du fichier texte");
@@ -61,16 +64,16 @@ unsigned char **words = malloc(100 * sizeof(char*)); // tableau pour stocker les
         return EXIT_FAILURE;
     }
 
-    int wordCount = 0; // Compteur de mots
-      // Somme des tailles des mots
+    int wordCount = 0; // compteur de mots
+      // somme des tailles des mots
 
-    char bufferWord[256]; // Buffer temporaire pour un mot
+    char bufferWord[256]; // buffer temporaire pour un mot
     int bytesRead;
     while ((bytesRead = read(fdWord, &bufferWord[index], 1)) > 0) {
         if (bufferWord[index] == '\n' || index == sizeof(bufferWord) - 1) {
              bufferWord[index] = '\0';
             
-            // Allouer de la mémoire pour le mot et le copier dans le tableau
+            // allouer de la mémoire pour le mot et le copier dans le tableau
             words[wordCount] = malloc((index + 1) * sizeof(char));
             if (words[wordCount] == NULL) {
                 perror("Erreur d'allocation pour un mot");
@@ -84,15 +87,15 @@ unsigned char **words = malloc(100 * sizeof(char*)); // tableau pour stocker les
             }
             strcpy((char *)words[wordCount], (char *) bufferWord);
 
-            maxNode += index-1; // Ajouter la taille du mot à la somme
+            maxNode += index; // ajouter la taille du mot à la somme
             wordCount++;
 
-            index = 0; // Réinitialiser l'indice pour lire le mot suivant
+            index = 0; // réinitialiser l'indice pour lire le mot suivant
         } else {
             index++;
         }
 
-        // Vérifier si on dépasse la capacité du tableau
+        // vérifier si on dépasse la capacité du tableau
         if (wordCount >= 1000) {
             fprintf(stderr, "Erreur : Trop de mots dans le fichier\n");
             break;
@@ -105,29 +108,20 @@ unsigned char **words = malloc(100 * sizeof(char*)); // tableau pour stocker les
 
     close(fdWord);
 
-    // Afficher le nombre total de mots et la somme des tailles
-   
-    // definire la taille de la table de hachage
     // creation du trie 
     Trie trie = createTrie(maxNode);
 
     for (int i = 0; i < wordCount; i++)
     {
-    
-       
+        //inserer les mots dans le trie
         insertInTrie(trie,words[i]);
-        /* code */
     }
-    
-    
+    // creation des liens de suffixes
     buildSuffixLink(trie);
 
    int result =  search(trie,texte);
+   // affiche sur la sortie standard le nombre d'occurances trouvées
     printf("%d",result);
-    
-    
-
-
      
     return 0;
 }
@@ -174,10 +168,8 @@ void insertInTrie(Trie trie, unsigned char *w){
 
         }
         
-        
-        
     }
-    // declarer le derniere etat comme final
+    // déclarer le derniere etat comme final
     trie->finite[current_node] = 1;
     
 
@@ -219,56 +211,9 @@ int isInTrie(Trie trie, unsigned char *w){
     return 0;
     
 }
-//fonction qui construit un trie pour les prefix d'un mot
-Trie trie_pref(unsigned char *w){
-    int maxNode  = strlen((char *)w)+1;
-    Trie tr =  createTrie(maxNode);
-    insertInTrie(tr,w);
-    for (int i = 0; i < tr->nextNode; i++)
-    {   
-        // tous les noeud devienne finaux
-        tr->finite[i] = 1;
-        /* code */
-    }
-    return tr;
-    
-}
-// fonction qui construit un trie pour les suffixe d'un mot
-Trie trie_suff(unsigned char *w){
-   
-    int n = strlen((char *)w);
-    int maxNode  = n*(n+1)/2;  // la somme des longeurs des mots
-    printf("%d",n);
-    Trie tr =  createTrie(maxNode+1);
-     
-    for (int i = 0; i < n; i++)
-    {
-        unsigned char* suffix = w + i;
-        insertInTrie(tr,suffix);
-        /* code */
-    }
-        
-    return tr;
-}
-// fonction qui construit un trie pour les facteur d'un mot
-Trie trie_facteur(unsigned char *w) {
-    int n = strlen((char *)w);
-    int maxNode  = (n * n); // Nombre maximum de nœuds
-    Trie trie = createTrie(maxNode);
 
-    // Parcourir tous les suffixes
-    for (int i = 0; i < n; i++) {
-        // Pour chaque suffixe, insérer les facteurs
-        for (int j = i; j < n; j++) {
-            // La longueur du facteur est (j - i + 1)
-            char *factor = strndup((char *)(w + i), j - i + 1); // Créer un facteur
-            insertInTrie(trie, (unsigned char *)factor); // Insérer dans le trie
-            free(factor); // Libérer la mémoire allouée
-        }
-    }
 
-    return trie;
-}
+
 // fonction pour creer une file
 Queue createQueue(){
 Queue q = (struct queue *)malloc(sizeof(struct queue));
@@ -315,14 +260,14 @@ int dequeue(Queue q){
     return etat;
 }
 
-// fonction pour construire les liens de suffixe
+// fonction pour construire les liens de suffixe(suppléances)
 void buildSuffixLink(Trie trie){
     Queue q = createQueue();
-    // Initialiser les liens de suffixe pour les états initiaux
+    // initialiser les liens de suffixe pour l'état initial
     for (int i = 0; i < UCHAR_MAX; i++) {
         if (trie->transition[0][i] != -1) {
             trie->suffixLink[trie->transition[0][i]] = 0;
-            enqueue(q, trie->transition[0][i]);
+            enqueue(q, trie->transition[0][i]); // enfiler les successeurs pour faire un parcour en largeur
         }
     }
 
@@ -342,6 +287,7 @@ void buildSuffixLink(Trie trie){
                 }
                 
                 trie->suffixLink[child] = suffix_state;
+                // construire le lien de sortie qui permet de trouver tous les mots reconnus 
                 trie->outputLink[child] = trie->finite[trie->suffixLink[child]] ? trie->suffixLink[child] : trie->outputLink[trie->suffixLink[child]];
                 enqueue(q, child);
             }
@@ -349,7 +295,7 @@ void buildSuffixLink(Trie trie){
     }
     free(q);
 }
-
+// fonction de recherche des occurences de mots dans un texte 
 int search(Trie trie, unsigned char *text) {
     int n = strlen((char *)text);
     int cmpt = 0; //compteur d'occurences
@@ -364,6 +310,7 @@ int search(Trie trie, unsigned char *text) {
         if (trie->finite[current_state]) {
             cmpt++;
         }
+        // verifier si on a trouvé d'autres mots
         int output_state = trie->outputLink[current_state];
         while (output_state != 0) {
             cmpt++;

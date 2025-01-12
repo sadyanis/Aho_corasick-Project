@@ -10,15 +10,15 @@ typedef struct _list *List;
 
 struct _trie {
     int maxNode; //nbt max de noeud
-    int nextNode;
+    int nextNode;// prochain noeud disponible
     List *transition; // table hachage
-    char *finite;
-    int *suffixLink; // Tableau de liens de suffixe(suppleance)
-    int *outputLink; // Tableau de liens de sortie
+    char *finite;// tableau des états terminaux
+    int *suffixLink; // tableau de liens de suffixe(suppleance)
+    int *outputLink; // tableau permettant d'identifier tous les mots reconnus via liens de sortie
 };
 
 typedef struct _trie *Trie;
-
+// structure d'une file
 typedef struct Node{
     int etat;
     struct Node *suivant;
@@ -37,7 +37,6 @@ unsigned int hash_function(char c, int num);
 
 void insertInTrie(Trie trie, unsigned char *w);
 
-int isInTrie(Trie trie, unsigned char *w);
 
 List createNewTransition(int startNode, unsigned char letter, int targetNode);
 
@@ -47,11 +46,11 @@ void buildSuffixLink(Trie trie);
 
 int search(Trie trie, unsigned char *text);
 
-// crrer une file
+// creer une file
 Queue createQueue();
-//fonction pour enfiler un element
+//fonction pour enfiler un élément
 void enqueue(Queue q, int etat);
-//fonction pour defiler un element
+//fonction pour défiler un élément
 int dequeue(Queue q);
 
 

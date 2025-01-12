@@ -11,20 +11,21 @@
 
 #define TRUE 0
 #define FALSE 1
-//#define TABLE_SIZE UCHAR_MAX  // Un nombre premier proche du nombre d'éléments prévus a definir plutard
-struct stat st;
+//#define TABLE_SIZE UCHAR_MAX  
+
 
 int TABLE_SIZE; // variable global representant la taille de la table de hachage
 
 int main(int argc , char** argv) {
+    // structure pour récupérer les attributs du fichier
     struct stat st;
-    char buffer[256];
     int maxNode = 1;
 
     if(argc != 3){
         printf("Usage: %s le nombre d'arguments invalide\n", argv[0]);
         exit(EXIT_FAILURE);
     }
+     //récupérer le nom du fichier texte et le nom du fichier de mots passés en paramétres
     char * wordFile = argv[1];
     char * textFile = argv[2];
     // récuperer les descriteurs de fichier 
@@ -38,10 +39,11 @@ int main(int argc , char** argv) {
         perror("Erreur lors de l'ouverture du fichier texte");
         return EXIT_FAILURE;
     }
+    // récuperer la taille du fichier 
     fstat(fdTexte, &st);
     int textSize = st.st_size;
     
-
+     // variable pour stocker le conteni du fichier
     unsigned char *texte = malloc(textSize + 1);
     if (texte == NULL) {
         perror("Erreur d'allocation pour le texte");
@@ -72,11 +74,12 @@ unsigned char **words = malloc(100 * sizeof(char*)); // tableau pour stocker les
 
     char bufferWord[256]; // Buffer temporaire pour un mot
     int bytesRead;
+    // stocker les mots dans un tableau
     while ((bytesRead = read(fdWord, &bufferWord[index], 1)) > 0) {
         if (bufferWord[index] == '\n' || index == sizeof(bufferWord) - 1) {
              bufferWord[index] = '\0';
             
-            // Allouer de la mémoire pour le mot et le copier dans le tableau
+            // allouer de la mémoire pour le mot et le copier dans le tableau
             words[wordCount] = malloc((index + 1) * sizeof(char));
             if (words[wordCount] == NULL) {
                 perror("Erreur d'allocation pour un mot");
@@ -90,10 +93,10 @@ unsigned char **words = malloc(100 * sizeof(char*)); // tableau pour stocker les
             }
             strcpy(( char*) words[wordCount],( char*)bufferWord);
 
-            maxNode += index; // Ajouter la taille du mot à la somme
+            maxNode += index; // ajouter la taille du mot à la somme
             wordCount++;
 
-            index = 0; // Réinitialiser l'indice pour lire le mot suivant
+            index = 0; // réinitialiser l'indice pour lire le mot suivant
         } else {
             index++;
         }
@@ -115,15 +118,14 @@ unsigned char **words = malloc(100 * sizeof(char*)); // tableau pour stocker les
     TABLE_SIZE = maxNode*2; // definire la taille de la table de hachage
     // creation du trie 
     Trie trie = createTrie(maxNode);
-
+    // insérer tous les mots dans le trie
     for (int i = 0; i < wordCount; i++)
     {
         insertInTrie(trie,words[i]);
-        /* code */
     }
-    
+    // construire les liens de suffixe
     buildSuffixLink(trie);
-
+    // calculer le nombre d'occurences et l'afficher sur la sortie standard
    int result =  search(trie,texte);
    printf("%d",result);
 
@@ -167,7 +169,7 @@ Trie createTrie(int maxNode){
         tr->suffixLink[i] = 0; // tous les liens de suppleance pointe vers l'etat 0
 
     }
-    // 
+    // initialiser le tableau de sortie 
     tr->outputLink = malloc(maxNode * sizeof(int));
     if(tr->suffixLink == NULL){
         perror("erreur d'initialisation");
@@ -219,7 +221,7 @@ q->head = NULL;
 q->tail = NULL;
 return q;
 }
-// fonction pour enfiler un element
+// fonction pour enfiler un element dans la file
 void enqueue(Queue q, int etat){
     Node *n = (Node *)malloc(sizeof(Node));
     if (n == NULL)
@@ -238,7 +240,7 @@ void enqueue(Queue q, int etat){
         q->tail = n;
     }
 }
-// fonction pour defiler un element
+// fonction pour defiler un élément
 int dequeue(Queue q){
     if(q->head == NULL){
         printf("La file est vide\n");
@@ -253,9 +255,6 @@ int dequeue(Queue q){
     free(n);
     return etat;
 }
-
-
-
 
 unsigned int hash_function(char c, int num) {
     unsigned int hash = 0;
@@ -339,7 +338,7 @@ void buildSuffixLink(Trie trie) {
                         failState = failTransition->targetNode;
                     }
 
-                    // Définir le lien de suffixe et le lien d'output
+                    // Définir le lien de suffixe et le lien de sortie
                     trie->suffixLink[child] = failState;
                     if (trie->finite[trie->suffixLink[child]]) {
                         trie->outputLink[child] = trie->suffixLink[child];
@@ -359,7 +358,7 @@ void buildSuffixLink(Trie trie) {
     free(q);
 }
 
-
+// fonction de recherche des occurences de mots dans un texte 
 int search(Trie trie, unsigned char *text) {
     int n = strlen((char *)text);
     int cmpt = 0;
@@ -379,6 +378,7 @@ int search(Trie trie, unsigned char *text) {
             if (trie->finite[temp]) {
                 cmpt++;
             }
+            // verifier si les suppleant du supplean est un état terminal
             temp = trie->outputLink[temp];
         }
         

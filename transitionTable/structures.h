@@ -3,13 +3,14 @@
 //struct de table de table de transition
 struct _trie {
     int maxNode; //nbt max de noeud
-    int nextNode; // Prochain noeud disponible
+    int nextNode; // prochain noeud disponible
     int **transition; // Table de transition entre les noeuds
     char *finite; // Indique si le noeud est final
-    int *suffixLink; // Lien de suppléance
-    int *outputLink; // Tableau de sortie
+    int *suffixLink; // lien de suppléance
+    int *outputLink; // tableau permettant d'identifier tous les mots reconnus via liens de sortie
 };
 
+// structure de file
 typedef struct Node{
     int etat;
     struct Node *suivant;

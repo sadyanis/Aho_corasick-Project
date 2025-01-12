@@ -25,14 +25,16 @@ done
 # Génération des ensembles de mots
 echo "Génération des ensembles de mots..."
 for ALPHABET in "${ALPHABETS[@]}"; do
-    WORD_FILE="mots/mots_${ALPHABET}.txt"
+    
     for WORD_PARAMS in "${WORD_SETS[@]}"; do
+        
         WORD_COUNT=$(echo $WORD_PARAMS | cut -d' ' -f1)
         MIN_LENGTH=$(echo $WORD_PARAMS | cut -d' ' -f2)
         MAX_LENGTH=$(echo $WORD_PARAMS | cut -d' ' -f3)
+        WORD_FILE="mots/mots_${ALPHABET}_${MIN_LENGTH}_${MAX_LENGTH}.txt"
         
-        ./genere-mots $WORD_COUNT $MIN_LENGTH $MAX_LENGTH $ALPHABET >> $WORD_FILE
-        
+        ./genere-mots $WORD_COUNT $MIN_LENGTH $MAX_LENGTH $ALPHABET > $WORD_FILE
+        echo "Mots générés : $WORD_FILE"
     done
-    echo "Mots générés : $WORD_FILE"
+    
 done
