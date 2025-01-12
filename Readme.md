@@ -1,4 +1,3 @@
-
 # Manuel d'Utilisation :
 
 **Réalisé par :**
@@ -83,6 +82,7 @@ pipenv install
 5. Lancez le script pour générer les graphes
 
 ```bash
- python3 graph.py
+ python3 graphe.py
 ```
->>>>>>> 0bf98846fcb79c5e8b31ef17a7aaef467a7d2f74
+
+> > > > > > > 0bf98846fcb79c5e8b31ef17a7aaef467a7d2f74
